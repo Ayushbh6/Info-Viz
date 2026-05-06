@@ -1,0 +1,20 @@
+Project
+Project Timeline
+Below are all the deadlines regarding the Project. 
+
+22.04.2026: Project proposal (TUWEL upload)
+10.06.2026: Project submission (Submit your final project as archive. Add a screenshot.png if you want your project to be shown at the hall of fame.)
+14.06.2026: Project presentation slides (TUWEL upload)
+15.06.2026 (12:00-14:00) or 17.06.2026 (14:00-16:00): Project presentations in seminar room FAV 01 C (registration via TUWEL ~2 weeks before the presentation days)
+ 
+Project Proposal
+Please submit a project proposal (approximately 2 pages) outlining your planned topic, objectives, methodology, and expected outcomes.
+
+The proposal should roughly follow the first steps of the data science lifecycle:  
+
+Data understanding: What data are you investigating? What are your questions about the data? Why is this interesting / relevant? 
+Data mining: Where and how do you expect to find the necessary data? How will you retrieve the data? 
+Data cleaning: Do you have to merge multiple data sets? Do you expect to have missing or uncertain data values? How will you handle those? 
+Data exploration: Which visual encoding and interaction techniques do you plan to use to explore the data and to derive hypotheses? Which programs / libraries / tools do you plan to use? 
+Feature engineering: Which data attributes / features do you plan to select or extract to answer your questions? 
+(Optional) Predictive modeling: Do you plan to use or train a model to make predictions? If so, provide some details on the planned training and validation strategy. 
