@@ -15,5 +15,6 @@ env/
 .idea/
 
 # Generated data and logs
-*.csv
+data/raw_*.csv
+data/stats_processed_all_bouts.csv
 *.log

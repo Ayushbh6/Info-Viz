@@ -1,0 +1,298 @@
+/* Custom CSS Stylesheet for The Octagon Archetypes Dashboard */
+
+:root {
+    --bg-dark:       #111115;
+    --bg-card:       #0d0d11;
+    --bg-black:      #07070a;
+    --bg-header:     #060609;
+    --border-color:  #22222a;
+    --border-mid:    rgba(255,255,255,0.08);
+    --text-body:     #ccccd8;
+    --text-muted:    #7a7a90;
+    --text-dim:      #555565;
+    --danger-neon:   #e5122e;
+    --danger-dim:    rgba(229, 18, 46, 0.10);
+    --primary-neon:  #1d6ef5;
+    --warning-neon:  #f0a800;
+    --card-shadow:   0 4px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.035);
+    --shadow-float:  0 8px 32px rgba(0,0,0,0.9);
+}
+
+/* ---- Base ---- */
+body {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-body) !important;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle page texture */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(229,18,46,0.04) 0%, transparent 55%),
+                      radial-gradient(ellipse at 80% 100%, rgba(29,110,245,0.03) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- Scrollbars ---- */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: var(--bg-black); }
+::-webkit-scrollbar-thumb      { background: #2a2a36; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover{ background: var(--danger-neon); }
+
+/* ---- Typography ---- */
+.font-title {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1.1px;
+}
+
+.font-mono { font-family: 'Roboto Mono', monospace; }
+.fs-7 { font-size: 0.82rem !important; }
+.fs-8 { font-size: 0.70rem !important; }
+
+/* ---- Header ---- */
+header.navbar {
+    background: var(--bg-header) !important;
+    border-bottom: 1px solid rgba(229, 18, 46, 0.28) !important;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.8) !important;
+}
+
+header .navbar-brand .font-title {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+
+/* ---- Cards ---- */
+.bg-octagon {
+    background-color: var(--bg-card) !important;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bg-octagon:hover {
+    border-color: rgba(255,255,255,0.10) !important;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06) !important;
+}
+
+.card-header.bg-black {
+    background: #09090d !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 0.85rem 1.1rem !important;
+}
+
+/* ---- Controls Hub ---- */
+.card.bg-octagon .card-body .form-label {
+    letter-spacing: 0.6px;
+}
+
+/* ---- Sliders ---- */
+.custom-slider {
+    accent-color: var(--danger-neon);
+}
+.custom-slider::-webkit-slider-runnable-track {
+    background: var(--border-color);
+    height: 3px;
+    border-radius: 2px;
+}
+.custom-slider::-webkit-slider-thumb {
+    background: var(--danger-neon) !important;
+    border: 2px solid rgba(229,18,46,0.3);
+    box-shadow: 0 0 6px rgba(229,18,46,0.4);
+}
+.custom-slider::-moz-range-thumb {
+    background: var(--danger-neon) !important;
+    border: 2px solid rgba(229,18,46,0.3);
+    box-shadow: 0 0 6px rgba(229,18,46,0.4);
+}
+
+/* ---- Form Controls (select, input) ---- */
+.form-select.bg-dark,
+.form-control.bg-dark {
+    background-color: #0a0a0e !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-body) !important;
+    border-radius: 5px !important;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.82rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-select.bg-dark:focus,
+.form-control.bg-dark:focus {
+    border-color: rgba(229,18,46,0.5) !important;
+    box-shadow: 0 0 0 2px rgba(229,18,46,0.12) !important;
+    background-color: #0c0c11 !important;
+    outline: none;
+}
+
+.input-group-text.bg-danger {
+    background-color: var(--danger-neon) !important;
+    border-color: var(--danger-neon) !important;
+    border-radius: 5px 0 0 5px !important;
+}
+.input-group-text.bg-primary {
+    background-color: var(--primary-neon) !important;
+    border-color: var(--primary-neon) !important;
+    border-radius: 5px 0 0 5px !important;
+}
+
+/* ---- Buttons ---- */
+.btn-danger {
+    background-color: var(--danger-neon) !important;
+    border-color: var(--danger-neon) !important;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+.btn-danger:hover {
+    background-color: #c00e26 !important;
+    box-shadow: 0 0 12px rgba(229,18,46,0.35) !important;
+}
+.btn-warning {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+}
+
+/* ---- Era Label block ---- */
+.border.border-secondary.rounded.bg-black {
+    background: #09090d !important;
+    border-color: var(--border-color) !important;
+    border-radius: 6px !important;
+}
+
+/* ---- Fighter Info Cards (Red/Blue corner) ---- */
+.card.bg-dark.border-danger {
+    background: #0c0a0b !important;
+    border-radius: 7px !important;
+    box-shadow: 0 2px 14px rgba(229,18,46,0.06);
+}
+.card.bg-dark.border-primary {
+    background: #090b0e !important;
+    border-radius: 7px !important;
+    box-shadow: 0 2px 14px rgba(29,110,245,0.06);
+}
+
+/* ---- Auto-complete Dropdown ---- */
+.autocomplete-dropdown {
+    background-color: #0c0c10;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-float);
+    border-radius: 5px;
+    margin-top: 2px;
+}
+
+.autocomplete-item {
+    padding: 7px 12px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.80rem;
+    color: var(--text-body);
+    transition: background 0.12s, color 0.12s;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.autocomplete-item:last-child { border-bottom: none; }
+
+.autocomplete-item:hover {
+    background-color: var(--danger-neon);
+    color: #fff;
+}
+
+/* ---- Tooltips ---- */
+.custom-tooltip {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    background-color: rgba(7, 7, 10, 0.96);
+    border: 1px solid rgba(229,18,46,0.4);
+    padding: 10px 14px;
+    border-radius: 5px;
+    font-size: 0.77rem;
+    color: #e0e0ee;
+    line-height: 1.5;
+    z-index: 9999;
+    box-shadow: var(--shadow-float);
+    backdrop-filter: blur(4px);
+}
+
+/* ---- Radar containers ---- */
+.radar-container {
+    background: #09090d !important;
+    border-color: var(--border-color) !important;
+    border-radius: 7px !important;
+    transition: border-color 0.2s;
+}
+.radar-container:hover {
+    border-color: rgba(255,255,255,0.10) !important;
+}
+.radar-container svg {
+    display: block;
+    margin: 0 auto;
+}
+
+/* ---- D3 Axis styling ---- */
+.domain              { stroke: #2a2a35 !important; }
+.tick line           { stroke: #1e1e28 !important; }
+.tick text {
+    fill: var(--text-muted) !important;
+    font-family: 'Roboto Mono', monospace !important;
+    font-size: 0.72rem !important;
+}
+
+/* ---- Grid lines ---- */
+.grid-line {
+    stroke: rgba(255,255,255,0.04);
+    stroke-dasharray: 2, 3;
+}
+
+/* ---- Scatter chart annotation (PCA note) ---- */
+.chart-caption {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+    text-align: right;
+    padding: 4px 6px 0;
+    line-height: 1.4;
+}
+
+/* ---- Legend dots ---- */
+.legend-dot {
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.legend-dot:hover { opacity: 0.65; }
+
+/* ---- Form check (toggle switches) ---- */
+.form-check-input:checked {
+    background-color: var(--danger-neon) !important;
+    border-color: var(--danger-neon) !important;
+}
+.form-check-input:focus {
+    box-shadow: 0 0 0 2px rgba(229,18,46,0.20) !important;
+    border-color: rgba(229,18,46,0.5) !important;
+}
+
+/* ---- Footer ---- */
+footer {
+    background: var(--bg-header) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .w-max-sm-100 { width: 100% !important; }
+    header .navbar-brand .font-title { font-size: 0.95rem; }
+}

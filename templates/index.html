@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Octagon Archetypes – InfoVis Project</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-dark text-light">
+
+    <!-- Header Navigation -->
+    <header class="navbar navbar-dark bg-black shadow-lg border-bottom border-danger border-2 p-3">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fa-solid fa-square-poll-vertical text-danger me-2"></i>
+                <span class="font-title text-uppercase fw-bold text-danger">The Octagon Archetypes</span>
+                <span class="fs-6 text-muted font-mono ms-3">30-Year Evolution of MMA (1994–2026)</span>
+            </span>
+            <div class="d-flex text-end text-muted font-mono fs-7">
+                <span>TU Wien &bull; InfoViz &bull; Ayush B. &bull; Defin B. &bull; Ricardo G.</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container-fluid p-4">
+        
+        <!-- Controls Hub Row -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-octagon border-secondary p-3">
+                    <div class="row align-items-center g-3">
+                        
+                        <!-- Timeline Control -->
+                        <div class="col-lg-6 col-md-12">
+                            <div class="d-flex align-items-center">
+                                <button id="btn-play" class="btn btn-danger me-3 px-3">
+                                    <i class="fa-solid fa-play"></i> <span class="ms-1 d-none d-sm-inline">Play</span>
+                                </button>
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between font-mono fs-7 text-uppercase mb-1">
+                                        <span class="text-danger">Timeline Era</span>
+                                        <span class="text-warning fw-bold fs-6" id="year-display">2026</span>
+                                    </div>
+                                    <input type="range" class="form-range custom-slider" id="year-slider" min="1994" max="2026" value="2026">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight Class Selection -->
+                        <div class="col-lg-3 col-sm-6">
+                            <label for="filter-weight" class="form-label font-mono fs-7 text-uppercase text-muted mb-1">Weight Class</label>
+                            <select id="filter-weight" class="form-select bg-dark text-light border-secondary">
+                                <option value="ALL">All Weight Classes</option>
+                                <option value="Heavyweight">Heavyweight (&le; 265 lbs)</option>
+                                <option value="Light Heavyweight">Light Heavyweight (205 lbs)</option>
+                                <option value="Middleweight">Middleweight (185 lbs)</option>
+                                <option value="Welterweight">Welterweight (170 lbs)</option>
+                                <option value="Lightweight">Lightweight (155 lbs)</option>
+                                <option value="Featherweight">Featherweight (145 lbs)</option>
+                                <option value="Bantamweight">Bantamweight (135 lbs)</option>
+                                <option value="Flyweight">Flyweight (125 lbs)</option>
+                                <option value="Women's Featherweight">Women's Featherweight (145 lbs)</option>
+                                <option value="Women's Bantamweight">Women's Bantamweight (135 lbs)</option>
+                                <option value="Women's Flyweight">Women's Flyweight (125 lbs)</option>
+                                <option value="Women's Strawweight">Women's Strawweight (115 lbs)</option>
+                            </select>
+                        </div>
+
+                        <!-- Active Era Display -->
+                        <div class="col-lg-3 col-sm-6 text-center text-lg-end">
+                            <div class="d-inline-block border border-secondary rounded px-3 py-2 bg-black font-title">
+                                <span class="text-uppercase text-muted fs-7 d-block">Historical Era</span>
+                                <span id="era-label" class="text-info fw-bold text-uppercase fs-5">Modern Hybrid Era</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upper Row: Streams & Scattered Points -->
+        <div class="row g-4 mb-4">
+            
+            <!-- Left Card: Streamgraph -->
+            <div class="col-xl-6 col-12">
+                <div class="card bg-octagon border-secondary h-100">
+                    <div class="card-header bg-black border-bottom border-secondary d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-title text-uppercase text-danger">
+                            <i class="fa-solid fa-water text-danger me-2"></i>The Archetype Streamgraph
+                        </h5>
+                        <div class="form-check form-switch font-mono fs-7 text-uppercase text-muted">
+                            <input class="form-check-input text-danger bg-dark border-secondary" type="checkbox" id="toggle-legacy" checked>
+                            <label class="form-check-label" for="toggle-legacy">Show Legacy Band</label>
+                        </div>
+                    </div>
+                    <div class="card-body bg-black position-relative p-3" style="min-height: 380px;">
+                        <div id="streamgraph-chart" class="w-100 h-100"></div>
+                        <div id="stream-tooltip" class="custom-tooltip font-mono"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Card: Scatter plot / The Great Migration -->
+            <div class="col-xl-6 col-12">
+                <div class="card bg-octagon border-secondary h-100">
+                    <div class="card-header bg-black border-bottom border-secondary d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 font-title text-uppercase text-danger">
+                            <i class="fa-solid fa-circle-nodes text-danger me-2"></i>The Great Migration
+                        </h5>
+                        <!-- Scatter Display Settings -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check form-check-inline font-mono fs-7 text-uppercase text-muted m-0">
+                                <input class="form-check-input" type="checkbox" id="cb-contours">
+                                <label class="form-check-label" for="cb-contours">Density Contours</label>
+                            </div>
+                            <div class="form-check form-check-inline font-mono fs-7 text-uppercase text-muted m-0">
+                                <input class="form-check-input" type="checkbox" id="cb-centroids" checked>
+                                <label class="form-check-label" for="cb-centroids">Centroid Paths</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body bg-black position-relative p-3" style="min-height: 380px;">
+                        <div id="migration-chart" class="w-100 h-100"></div>
+                        <div id="scatter-tooltip" class="custom-tooltip font-mono"></div>
+                        
+                        <!-- PCA Annotation -->
+                        <div class="chart-caption position-absolute" style="bottom: 46px; left: 12px;">
+                            PCA 2D &bull; 44.6% variance &bull; career-avg positions
+                        </div>
+
+                        <!-- Mini Opacity Slider Overlay -->
+                        <div class="position-absolute bottom-0 end-0 m-3 px-2 py-1 border rounded font-mono fs-8 text-muted" style="background:rgba(7,7,10,0.88); border-color:#22222a !important; width: 135px;">
+                            <span class="fs-8">Opacity</span>
+                            <input type="range" class="form-range d-inline-block align-middle custom-slider ms-1" id="opacity-slider" min="0.1" max="1.0" step="0.05" value="0.5" style="width: 62px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Lower Row: Fighter comparison Radar Panel -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card bg-octagon border-secondary">
+                    <div class="card-header bg-black border-bottom border-secondary d-flex flex-wrap justify-content-between align-items-center gap-3 p-3">
+                        <h5 class="m-0 font-title text-uppercase text-danger">
+                            <i class="fa-solid fa-dna text-danger me-2"></i>Fighter DNA Profile Comparison
+                        </h5>
+                        
+                        <!-- Search and Selectors -->
+                        <div class="d-flex flex-wrap align-items-center gap-3 w-max-sm-100">
+                            <!-- Fighter 1 (Red Corner) Search -->
+                            <div class="position-relative">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-danger text-light border-danger"><i class="fa-solid fa-search"></i></span>
+                                    <input type="text" id="search-f1" class="form-control bg-dark text-light border-secondary font-mono text-uppercase" placeholder="RED Fighter (e.g. Khabib)" style="width: 230px;">
+                                </div>
+                                <div id="f1-results" class="autocomplete-dropdown bg-dark border border-secondary rounded overflow-auto position-absolute w-100" style="max-height: 200px; display:none; z-index: 1000;"></div>
+                            </div>
+
+                            <!-- VS Divider -->
+                            <span class="text-uppercase fw-bold text-danger font-title fs-5 d-none d-md-inline">&bull; VS &bull;</span>
+
+                            <!-- Fighter 2 (Blue Corner) Search -->
+                            <div class="position-relative">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-light border-primary"><i class="fa-solid fa-search"></i></span>
+                                    <input type="text" id="search-f2" class="form-control bg-dark text-light border-secondary font-mono text-uppercase" placeholder="BLUE Fighter (e.g. Conor)" style="width: 230px;">
+                                </div>
+                                <div id="f2-results" class="autocomplete-dropdown bg-dark border border-secondary rounded overflow-auto position-absolute w-100" style="max-height: 200px; display:none; z-index: 1000;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body bg-black p-4">
+                        <div class="row g-4">
+                            
+                            <!-- Fighter Brief info cards -->
+                            <div class="col-lg-3 col-12 d-flex flex-column gap-3">
+                                <!-- Red Fighter Info Card -->
+                                <div class="card bg-dark border-danger border-start border-4 shadow-sm p-3">
+                                    <h6 class="text-danger font-title text-uppercase m-0 d-flex justify-content-between">
+                                        <span>Red Corner</span>
+                                        <i class="fa-solid fa-user"></i>
+                                    </h6>
+                                    <h4 id="f1-card-name" class="font-title mt-2 text-uppercase mb-1">Select Red Fighter</h4>
+                                    <div class="font-mono fs-7 text-muted mt-2">
+                                        <p class="m-0">Archetype: <span id="f1-card-arch" class="text-light fw-bold">-</span></p>
+                                        <p class="m-0">Weight Class: <span id="f1-card-class" class="text-light">-</span></p>
+                                        <p class="m-0">Career Record: <span id="f1-card-record" class="text-light">- fights</span></p>
+                                        <p class="m-0">Physicals: <span id="f1-card-phys" class="text-light">-</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Blue Fighter Info Card -->
+                                <div class="card bg-dark border-primary border-start border-4 shadow-sm p-3">
+                                    <h6 class="text-primary font-title text-uppercase m-0 d-flex justify-content-between">
+                                        <span>Blue Corner</span>
+                                        <i class="fa-solid fa-user"></i>
+                                    </h6>
+                                    <h4 id="f2-card-name" class="font-title mt-2 text-uppercase mb-1">Select Blue Fighter</h4>
+                                    <div class="font-mono fs-7 text-muted mt-2">
+                                        <p class="m-0">Archetype: <span id="f2-card-arch" class="text-light fw-bold">-</span></p>
+                                        <p class="m-0">Weight Class: <span id="f2-card-class" class="text-light">-</span></p>
+                                        <p class="m-0">Career Record: <span id="f2-card-record" class="text-light">- fights</span></p>
+                                        <p class="m-0">Physicals: <span id="f2-card-phys" class="text-light">-</span></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Radar Charts Grid -->
+                            <div class="col-lg-9 col-12">
+                                <div class="row g-4 text-center">
+                                    <!-- Striking Target Radar -->
+                                    <div class="col-md-4 col-12">
+                                        <h6 class="font-title text-uppercase text-muted mb-2">Striking Targets %</h6>
+                                        <div id="radar-targets" class="radar-container border border-secondary rounded bg-dark p-2" style="min-height: 250px;"></div>
+                                    </div>
+                                    <!-- Striking Tactics Radar -->
+                                    <div class="col-md-4 col-12">
+                                        <h6 class="font-title text-uppercase text-muted mb-2">Tactical Positions %</h6>
+                                        <div id="radar-tactics" class="radar-container border border-secondary rounded bg-dark p-2" style="min-height: 250px;"></div>
+                                    </div>
+                                    <!-- Grappling Attributes Radar -->
+                                    <div class="col-md-4 col-12">
+                                        <h6 class="font-title text-uppercase text-muted mb-2">Wrestling & Outputs %</h6>
+                                        <div id="radar-grappling" class="radar-container border border-secondary rounded bg-dark p-2" style="min-height: 250px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Global Footer -->
+    <footer class="text-center text-muted font-mono fs-8 py-4 mt-5">
+        <div class="container">
+            <p class="m-0">&copy; 2026 &nbsp;&bull;&nbsp; TU Wien &nbsp;&bull;&nbsp; Information Visualization</p>
+            <p class="m-1" style="color:#444455;">Data: UFC-DataLab (1994–2026, 8,591 bouts) &bull; Flask &bull; scikit-learn &bull; D3.js v7</p>
+        </div>
+    </footer>
+
+    <!-- D3.js and Libraries -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Visual Coding Modules -->
+    <script src="{{ url_for('static', filename='js/streamgraph.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/migration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/radarchart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
