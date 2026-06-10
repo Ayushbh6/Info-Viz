@@ -20,6 +20,10 @@ class MigrationScatterPlot {
         this.opacity = 0.5;
         this.showContours = false;
         this.showCentroids = true;
+        // Display labels (internal archetype keys stay unchanged for lookups)
+        this.displayNames = {
+            "Legacy / Historical (Limited Stats)": "Pre-FightMetric Era (sparse stats)"
+        };
 
         this.init();
     }
@@ -38,57 +42,68 @@ class MigrationScatterPlot {
             .append("g")
             .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
 
-        // Static Scale Dimensions (keeps stable grid layout as slider scrubs!)
-        this.xScale = d3.scaleLinear().domain([-15, 15]).range([0, this.width]);
-        this.yScale = d3.scaleLinear().domain([-15, 15]).range([this.height, 0]);
+        // Scales: domain is fixed ONCE in setData() from the full multi-year position
+        // range, so the grid never shifts while the slider scrubs (stable reference frame).
+        this.xScale = d3.scaleLinear().domain([-6, 10]).range([0, this.width]);
+        this.yScale = d3.scaleLinear().domain([-7, 9]).range([this.height, 0]);
 
-        // Draw background grid lines
-        this.svg.append("g")
-            .attr("class", "grid-axis-lines")
-            .selectAll(".grid-line")
-            .data(d3.range(-15, 16, 5))
-            .enter()
-            .append("line")
-            .attr("class", "grid-line")
-            .attr("x1", d => this.xScale(d))
-            .attr("x2", d => this.xScale(d))
-            .attr("y1", 0)
-            .attr("y2", this.height);
-
-        this.svg.append("g")
-            .attr("class", "grid-axis-lines-y")
-            .selectAll(".grid-line")
-            .data(d3.range(-15, 16, 5))
-            .enter()
-            .append("line")
-            .attr("class", "grid-line")
-            .attr("x1", 0)
-            .attr("x2", this.width)
-            .attr("y1", d => this.yScale(d))
-            .attr("y2", d => this.yScale(d));
+        // Static layers drawn once the domain is known
+        this.gridGroup = this.svg.append("g").attr("class", "grid-axis-lines");
 
         // Group container folders
         this.contourGroup = this.svg.append("g").attr("class", "contours-group");
         this.centroidGroup = this.svg.append("g").attr("class", "centroids-group");
         this.dotsGroup = this.svg.append("g").attr("class", "fights-dots-group");
 
-        // Add axes
+        // Axis groups (populated in setupFrame once domain is final)
         this.xAxisG = this.svg.append("g")
             .attr("class", "x-axis font-mono fs-8")
             .attr("transform", `translate(0,${this.height})`);
 
         this.yAxisG = this.svg.append("g")
             .attr("class", "y-axis font-mono fs-8");
-
-        this.xAxisG.call(d3.axisBottom(this.xScale).ticks(6));
-        this.yAxisG.call(d3.axisLeft(this.yScale).ticks(6));
     }
 
     setData(data) {
         this.data = data;
+        // Lock the reference frame from the full range of all per-year positions.
+        this.setupFrame();
         // Pre-compute centroids per year to draw centroid lines
         this.precomputeHistoricalCentroids();
         this.update();
+    }
+
+    // Establishes a single stable coordinate frame (domain + gridlines + axes) so that
+    // playing the timeline animates points WITHIN a fixed space rather than re-scaling.
+    setupFrame() {
+        if (!this.data || this.data.length === 0) return;
+
+        const padding = 1.5;
+        const x_extent = d3.extent(this.data, d => d.pca_x);
+        const y_extent = d3.extent(this.data, d => d.pca_y);
+        this.xScale.domain([x_extent[0] - padding, x_extent[1] + padding]);
+        this.yScale.domain([y_extent[0] - padding, y_extent[1] + padding]);
+
+        // Nice, rounded gridline ticks spanning the locked domain
+        const xTicks = this.xScale.ticks(7);
+        const yTicks = this.yScale.ticks(7);
+
+        const vLines = this.gridGroup.selectAll(".grid-line-v").data(xTicks);
+        vLines.enter().append("line").attr("class", "grid-line grid-line-v")
+            .merge(vLines)
+            .attr("x1", d => this.xScale(d)).attr("x2", d => this.xScale(d))
+            .attr("y1", 0).attr("y2", this.height);
+        vLines.exit().remove();
+
+        const hLines = this.gridGroup.selectAll(".grid-line-h").data(yTicks);
+        hLines.enter().append("line").attr("class", "grid-line grid-line-h")
+            .merge(hLines)
+            .attr("x1", 0).attr("x2", this.width)
+            .attr("y1", d => this.yScale(d)).attr("y2", d => this.yScale(d));
+        hLines.exit().remove();
+
+        this.xAxisG.call(d3.axisBottom(this.xScale).ticks(7));
+        this.yAxisG.call(d3.axisLeft(this.yScale).ticks(7));
     }
 
     setYear(year) {
@@ -147,17 +162,6 @@ class MigrationScatterPlot {
         if (this.weightClass !== "ALL") {
             activePoints = activePoints.filter(d => d.weight_class === this.weightClass);
         }
-
-        // Auto Scale domain adjust dynamically to keep centered around active points
-        const padding = 2;
-        const x_extent = d3.extent(this.data, d => d.pca_x);
-        const y_extent = d3.extent(this.data, d => d.pca_y);
-        this.xScale.domain([x_extent[0] - padding, x_extent[1] + padding]);
-        this.yScale.domain([y_extent[0] - padding, y_extent[1] + padding]);
-
-        // Redraw Axes due to dynamic zooming ranges
-        this.xAxisG.transition().duration(200).call(d3.axisBottom(this.xScale).ticks(6));
-        this.yAxisG.transition().duration(200).call(d3.axisLeft(this.yScale).ticks(6));
 
         // 1. Render Density Contours (solving Visual Noise feedback)
         this.contourGroup.selectAll(".contour").remove();
@@ -224,33 +228,47 @@ class MigrationScatterPlot {
         const self = this;
         const tooltip = d3.select(this.tooltipId);
 
-        // Bind data
+        // Bind data keyed by fighter so a fighter persisting across years keeps its DOM
+        // node and smoothly TWEENS from last year's position to this year's position.
+        const ease = d3.easeCubicInOut;
+        const dur = 520;
+
         const dots = this.dotsGroup.selectAll(".fighter-dot")
             .data(activePoints, d => d.fighter);
 
-        // Exit old dots
+        // Exit: fighters no longer active this year fade + shrink away (no hard "pop").
         dots.exit()
+            .interrupt()
             .transition()
-            .duration(300)
+            .duration(dur * 0.6)
+            .ease(d3.easeCubicOut)
             .attr("r", 0)
+            .attr("opacity", 0)
             .remove();
 
-        // Enter + Update
-        dots.enter()
+        // Enter: new fighters appear at their position, fading/growing in.
+        const entered = dots.enter()
             .append("circle")
             .attr("class", "fighter-dot")
+            .attr("cx", d => this.xScale(d.pca_x))
+            .attr("cy", d => this.yScale(d.pca_y))
+            .attr("fill", d => this.colors[d.archetype])
+            .attr("stroke", "rgba(0, 0, 0, 0.5)")
+            .attr("stroke-width", 0.8)
             .attr("opacity", 0)
-            .attr("r", 0.5)
-            .merge(dots)
+            .attr("r", 0);
+
+        // Update + Enter together: tween position, radius and opacity for a fluid migration.
+        entered.merge(dots)
+            .interrupt()
             .transition()
-            .duration(250)
+            .duration(dur)
+            .ease(ease)
             .attr("cx", d => this.xScale(d.pca_x))
             .attr("cy", d => this.yScale(d.pca_y))
             .attr("r", 4.5)
             .attr("opacity", this.opacity)
-            .attr("fill", d => this.colors[d.archetype])
-            .attr("stroke", "rgba(0, 0, 0, 0.5)")
-            .attr("stroke-width", 0.8);
+            .attr("fill", d => this.colors[d.archetype]);
 
         // Rebind handlers
         this.dotsGroup.selectAll(".fighter-dot")
@@ -267,7 +285,7 @@ class MigrationScatterPlot {
             .on("mousemove", function(event, d) {
                 tooltip.html(`
                     <div class="fw-bold text-uppercase mb-1" style="border-bottom:1px solid #444">${d.fighter}</div>
-                    <div>Style: <span class="fw-bold" style="color:${self.colors[d.archetype]}">${d.archetype}</span></div>
+                    <div>Style: <span class="fw-bold" style="color:${self.colors[d.archetype]}">${self.displayNames[d.archetype] || d.archetype}</span></div>
                     <div>Weight: <span class="text-warning">${d.weight_class}</span></div>
                     <div>Career fights: <span class="text-info">${d.cumulative_fights}</span></div>
                     <div>Career wins: <span class="text-success">${Math.round(d.win_rate * 100)}%</span></div>

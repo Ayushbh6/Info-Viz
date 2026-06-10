@@ -325,7 +325,21 @@ def clean_and_process_data():
             fighter_year_records.append(yr_data)
             
     f_yr_df = pd.DataFrame(fighter_year_records)
-    
+
+    # 6b. Recompute PER-YEAR PCA positions so each fighter's dot MIGRATES over their career.
+    # We reuse the SAME fitted scaler + PCA from the career-level fit (no re-fit), so the
+    # 2D space and the archetype cluster labels stay identical and reproducible. Only the
+    # positions evolve: each (fighter, year) row is projected from its *cumulative* style
+    # vector up to that year. This is what produces the visible "Great Migration".
+    print("Projecting per-year cumulative style vectors into the frozen PCA space...")
+    X_yr = f_yr_df[cluster_features].copy().fillna(0.0)
+    X_yr_scaled = scaler.transform(X_yr)
+    X_yr_pca = pca.transform(X_yr_scaled)
+    f_yr_df['pca_x'] = X_yr_pca[:, 0]
+    f_yr_df['pca_y'] = X_yr_pca[:, 1]
+    print(f"Per-year PCA range: x=[{f_yr_df['pca_x'].min():.2f}, {f_yr_df['pca_x'].max():.2f}], "
+          f"y=[{f_yr_df['pca_y'].min():.2f}, {f_yr_df['pca_y'].max():.2f}]")
+
     # Save the Fighter-Year evolution sequence
     fy_output_path = os.path.join(data_dir, "ufc_fighter_years_evolution.csv")
     f_yr_df.to_csv(fy_output_path, index=False)
@@ -345,7 +359,7 @@ def clean_and_process_data():
         # Count styles
         counts = yr_active['archetype'].value_counts()
         row = {'year': int(yr), 'total_active': total_active_str}
-        for arch in set(archetype_list):
+        for arch in archetype_list:
             # Percentage of style present in that year
             raw_c = counts.get(arch, 0)
             row[arch] = (raw_c / total_active_str) * 100.0 if total_active_str > 0 else 0.0

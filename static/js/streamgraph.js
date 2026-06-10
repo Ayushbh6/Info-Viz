@@ -4,7 +4,7 @@ class StreamgraphChart {
     constructor(containerId, tooltipId) {
         this.containerId = containerId;
         this.tooltipId = tooltipId;
-        this.margin = { top: 20, right: 30, bottom: 85, left: 30 };
+        this.margin = { top: 20, right: 30, bottom: 110, left: 30 };
         this.colors = {
             "Distance Sniper": "#ff2a5f",            // Neon Pink
             "Ground Controller": "#00f5ff",          // Cyan
@@ -13,6 +13,10 @@ class StreamgraphChart {
             "Leg Kick Specialist": "#ffcc00",        // Gold
             "Clinch Boxer": "#9d3fff",                // Purple
             "Legacy / Historical (Limited Stats)": "#8c8c8c" // Grey
+        };
+        // Display labels for the legend (internal data keys stay unchanged for lookups)
+        this.displayNames = {
+            "Legacy / Historical (Limited Stats)": "Pre-FightMetric Era (sparse stats)"
         };
         this.data = [];
         this.selectedYear = 2026;
@@ -208,21 +212,22 @@ class StreamgraphChart {
             return true;
         });
 
-        // Translate the legend group to be horizontally placed below the X-axis numbers (which are at this.height)
+        // Translate the legend group to be placed below the X-axis numbers (which are at this.height).
         const legend = this.svg.append("g")
             .attr("class", "legend-group")
-            .attr("transform", `translate(0, ${this.height + 42})`);
+            .attr("transform", `translate(0, ${this.height + 40})`);
 
-        // Compute 3 columns evenly distributed across this.width
-        const numCols = 3;
+        // Two wide columns keep long archetype labels fully readable and never clipped.
+        const numCols = 2;
         const colWidth = this.width / numCols;
+        const rowHeight = 19;
 
         archetypes.forEach((arch, i) => {
             const col = i % numCols;
             const row = Math.floor(i / numCols);
 
             const g = legend.append("g")
-                .attr("transform", `translate(${col * colWidth}, ${row * 18})`)
+                .attr("transform", `translate(${col * colWidth}, ${row * rowHeight})`)
                 .style("cursor", "pointer")
                 .on("click", () => {
                     const customEvent = new CustomEvent("archetypeSelected", { detail: { archetype: arch } });
@@ -230,18 +235,18 @@ class StreamgraphChart {
                 });
 
             g.append("rect")
-                .attr("width", 10)
-                .attr("height", 10)
+                .attr("width", 11)
+                .attr("height", 11)
                 .attr("fill", this.colors[arch])
                 .attr("rx", 2);
 
             g.append("text")
-                .attr("x", 16)
-                .attr("y", 9)
+                .attr("x", 17)
+                .attr("y", 10)
                 .attr("fill", "#f5f5f7")
                 .style("font-family", "Roboto Mono, monospace")
-                .style("font-size", "0.62rem")
-                .text(arch);
+                .style("font-size", "0.66rem")
+                .text(this.displayNames[arch] || arch);
         });
     }
 }

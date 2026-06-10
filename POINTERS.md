@@ -16,7 +16,7 @@
 - **ctrl_pct** is control time in seconds divided by total fight duration in seconds → result is 0–1. Confirmed against raw data.
 - **Strike target % (head/body/leg) and positional % (distance/clinch/ground)** are sourced directly from FightMetric columns. Already 0–100 scale.
 - **kd_avg / sub_att_avg** are raw per-fight averages. Fighters with only 1–2 fights and multiple finishes can inflate these (e.g., 3.0 KDs/fight). We didn't apply a minimum fight filter — mention this briefly as a known limitation. The radar caps at 100 so it doesn't break visually.
-- **fillna(0.0) for early-era fighters**: Early UFC (1990s) had no FightMetric strike-target data. Filling with zero naturally groups them into the "Legacy / Historical (Limited Stats)" cluster. This is **intentional and transparent design** — don't apologize for it.
+- **fillna(0.0) for early-era fighters**: Early UFC (1990s) had no FightMetric strike-target data. Filling with zero naturally groups them into the legacy cluster. This is **intentional and transparent design** — don't apologize for it. In the UI this band is labelled **"Pre-FightMetric Era (sparse stats)"** (internal data key is still `Legacy / Historical (Limited Stats)`) and is toggleable, because it represents *missing data*, not a real fighting style.
 
 ---
 
@@ -38,10 +38,19 @@
 
 > *Say in your presentation:* **"PCA captures 44.6% of variance (PC1=27.1%, PC2=17.5%). The 2D positions reflect the two dominant stylistic axes but do not capture the full 10-dimensional fighter DNA. This is standard for high-dimensional behavioral data, and we disclose it explicitly."**
 
-- PCA was fit on 10 normalized features, then stored. The stored coordinates are verified to match a fresh recompute (max diff = 0.0).
-- **Fighter dot positions are career-average style positions — they do not move per year.** What moves are the **centroid trails**: the average PCA position of each archetype's active fighters in that year. This is the real "migration."
-- Frame it: *"Rather than per-fight noise, we visualize the structural drift of combat styles over decades. The centroid tracks show how the center of gravity of each archetype has shifted."* This is a legitimate design choice — not a bug.
-- The "Great Migration" scatter title is still accurate: it describes the movement of the field's center, not individual fighters.
+- The PCA (and StandardScaler) are **fit once on career-average profiles**, then **frozen**. The K-Means archetype labels are assigned from that same career fit, so each fighter keeps **one stable archetype colour** for their whole career.
+- **Fighter dot positions DO move per year.** For each `(fighter, year)` we take their *cumulative* style vector (all fights up to that year), pass it through the **same frozen scaler + PCA**, and store the resulting `pca_x/pca_y`. So a dot physically migrates across the plane as a fighter's cumulative style develops.
+  - Example to cite: **Khabib drifts from ≈(1.5, −0.3) in 2012 → (3.7, −0.9) by 2019** as control-wrestling accumulates. **Oliveira** settles into the submission-grappler region over a decade.
+- Two things therefore animate together: (1) individual dots tween to their new yearly positions, and (2) the **centroid trails** trace each archetype's center of gravity over time. Together they show the field collapsing from sparse 1990s specialists into the dense 2020s hybrid core — exactly the "Great Migration".
+- **Why archetype is career-based but position is per-year:** identity (what *kind* of fighter someone ultimately is) is most robustly judged across a whole career, while position should show *development*. Splitting these avoids dots flickering between colours year to year.
+- Reproducibility: re-running `process_data.py` reproduces identical cluster labels (verified) and a per-year PCA range of roughly x∈[−4.7, 9.9], y∈[−5.6, 8.9].
+
+---
+
+## Proposal vs. Implementation — Honest Reframing (be ready for this)
+
+- **"Hybrid Kaggle + live-scrape" claim:** In the proposal we planned to merge a Kaggle legacy archive with a custom scrape. In practice we consolidated onto a **single richer real source — UFC-DataLab** (itself scraped from ufcstats.com) that already spans **1994–2026**, removing the need to stitch two schemas. The custom `ufc_master_scraper.py` is retained and functional for extensibility. Frame as: *"we found one authoritative real source that already covered the full range, so merging two partial sets would only add schema risk."*
+- **"Per-15 normalization" claim:** The proposal mentioned normalizing absolute volumes to per-15-minute rates. Our clustering features are instead **ratio/percentage-based** (`ctrl_pct` = control seconds ÷ fight duration, plus target % and positional % which are already rate-like, and per-fight averages for KD/sub). `ctrl_pct`'s division by fight duration **achieves the same anti-skew goal as Per-15** (a 15-second KO can't dominate). So the *intent* of Per-15 is satisfied via time/ratio normalization — be transparent that we used ratios, not literal Per-15 counts.
 
 ---
 
@@ -62,7 +71,8 @@
 
 - **Real, scraped data** spanning 32 years of UFC — not a synthetic or Kaggle-only dataset
 - **Three fully linked visualizations** — timeline slider synchronizes streamgraph + scatter simultaneously; clicking a stream band cross-highlights scatter; clicking a dot loads fighter into the radar
-- **Play/Pause animation** — users can watch the 30-year meta evolution unfold automatically
+- **Per-year migrating scatter** — fighter dots physically move across the PCA plane as their cumulative style develops, over a locked reference frame, so Play renders as a smooth morph (not a re-pasted snapshot each year)
+- **Play/Pause animation** — users can watch the 30-year meta evolution unfold automatically as the field collapses from sparse specialists into the dense hybrid core
 - **Density contour overlay** — directly addresses professor feedback about visual noise in scatter
 - **Radar normalization** — directly addresses professor feedback about radar axis scaling
 - **Autocomplete fighter search** — both corners, cross-chart linked
