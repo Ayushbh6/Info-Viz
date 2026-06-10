@@ -7,8 +7,9 @@ class MigrationScatterPlot {
         this.margin = { top: 20, right: 30, bottom: 55, left: 45 };
         this.colors = {
             "Distance Sniper": "#ff2a5f",
-            "Wrestling Controller": "#00f5ff",
-            "Ground & Pound Grappler": "#2bff2b",
+            "Ground Controller": "#00f5ff",
+            "Ground & Pound Wrestler": "#2bff2b",
+            "Submission Grappler": "#ff7b00",
             "Leg Kick Specialist": "#ffcc00",
             "Clinch Boxer": "#9d3fff",
             "Legacy / Historical (Limited Stats)": "#8c8c8c"

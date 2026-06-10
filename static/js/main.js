@@ -313,8 +313,9 @@ function fillFighterCard(profile, corner) {
         // Apply styling colors
         let archColor = "#8c8c8c";
         if (profile.archetype === "Distance Sniper") archColor = "#ff2a5f";
-        else if (profile.archetype === "Wrestling Controller") archColor = "#00f5ff";
-        else if (profile.archetype === "Ground & Pound Grappler") archColor = "#2bff2b";
+        else if (profile.archetype === "Ground Controller") archColor = "#00f5ff";
+        else if (profile.archetype === "Ground & Pound Wrestler") archColor = "#2bff2b";
+        else if (profile.archetype === "Submission Grappler") archColor = "#ff7b00";
         else if (profile.archetype === "Leg Kick Specialist") archColor = "#ffcc00";
         else if (profile.archetype === "Clinch Boxer") archColor = "#9d3fff";
         cardArch.style.color = archColor;

@@ -7,8 +7,9 @@ class StreamgraphChart {
         this.margin = { top: 20, right: 30, bottom: 85, left: 30 };
         this.colors = {
             "Distance Sniper": "#ff2a5f",            // Neon Pink
-            "Wrestling Controller": "#00f5ff",        // Cyan
-            "Ground & Pound Grappler": "#2bff2b",    // Neon Green
+            "Ground Controller": "#00f5ff",          // Cyan
+            "Ground & Pound Wrestler": "#2bff2b",    // Neon Green
+            "Submission Grappler": "#ff7b00",        // Vibrant Orange
             "Leg Kick Specialist": "#ffcc00",        // Gold
             "Clinch Boxer": "#9d3fff",                // Purple
             "Legacy / Historical (Limited Stats)": "#8c8c8c" // Grey

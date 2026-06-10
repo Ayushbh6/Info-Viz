@@ -188,7 +188,6 @@ def clean_and_process_data():
     f_prof_df['reach'] = f_prof_df['reach'].fillna(r_medians).fillna(f_prof_df['reach'].median())
     
     # 4. Perform K-Means Clustering on Style Profiles
-    # Style features vector
     cluster_features = [
         'head_tar_pct', 'body_tar_pct', 'leg_tar_pct',
         'dist_pos_pct', 'clinch_pos_pct', 'ground_pos_pct',
@@ -208,26 +207,24 @@ def clean_and_process_data():
     kmeans = KMeans(n_clusters=6, random_state=42, n_init=10)
     f_prof_df['cluster'] = kmeans.fit_predict(X_scaled)
     
-    # Assign human names to clusters based on their centroids
-    # Cluster characteristics are:
-    # 0: High leg strike percentage (42%) and distance (83%) -> Leg Kick Specialist
-    # 1: High wrestling and moderate control (26%) -> Wrestling Controller
-    # 2: High ground position (46%), control (36%), subs, and takedowns -> Ground & Pound Grappler
-    # 3: High clinch position (42%) and body strikes (36%) -> Clinch Boxer
-    # 4: High knockdowns (0.32), head strikes (66%), distance (79%) -> Distance Sniper
-    # 5: Legacy / limited statistics (early eras or short bouts) -> Legacy / Historical (Limited Stats)
-    
     archetype_mappings = {
         0: "Leg Kick Specialist",
-        1: "Wrestling Controller",
-        2: "Ground & Pound Grappler",
+        1: "Ground Controller",
+        2: "Ground & Pound Wrestler",
         3: "Clinch Boxer",
         4: "Distance Sniper",
         5: "Legacy / Historical (Limited Stats)"
     }
     
-    print("\nArchetype Cluster Mappings:", archetype_mappings)
+    print("\nBase Archetype Cluster Mappings:", archetype_mappings)
     f_prof_df['archetype'] = f_prof_df['cluster'].map(archetype_mappings)
+
+    # 4b. RULE-BASED OVERRIDE FOR ADVANCED GRAPPLING SPLIT
+    # The user requested 3 distinct wrestling/grappling categories.
+    # We guarantee "Submission Grappler" is uniquely identified by isolating fighters
+    # who average >= 0.80 submission attempts per fight (e.g. Charles Oliveira, Demian Maia).
+    f_prof_df.loc[f_prof_df['sub_att_avg'] >= 0.80, 'archetype'] = "Submission Grappler"
+    print("Rule-Based Override Applied: 'Submission Grappler' isolated based on Sub Attempts.")
     
     # 5. Run PCA on the 10-dimensional space to reduce to 2D for "The Great Migration" plot
     print("Running PCA to reduce features to 2D coordinates...")
@@ -338,7 +335,9 @@ def clean_and_process_data():
     print("Computing yearly streamgraph archetype distributions...")
     stream_rows = []
     all_years = sorted(f_yr_df['year'].unique())
-    archetype_list = list(archetype_mappings.values())
+    # We must explicitly list the 7 archetypes, not just the 6 base mappings
+    archetype_list = list(archetype_mappings.values()) + ["Submission Grappler"]
+    
     for yr in all_years:
         yr_active = f_yr_df[f_yr_df['year'] == yr]
         total_active_str = len(yr_active)
@@ -346,7 +345,7 @@ def clean_and_process_data():
         # Count styles
         counts = yr_active['archetype'].value_counts()
         row = {'year': int(yr), 'total_active': total_active_str}
-        for arch in archetype_list:
+        for arch in set(archetype_list):
             # Percentage of style present in that year
             raw_c = counts.get(arch, 0)
             row[arch] = (raw_c / total_active_str) * 100.0 if total_active_str > 0 else 0.0
