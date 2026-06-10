@@ -4,7 +4,7 @@ class MigrationScatterPlot {
     constructor(containerId, tooltipId) {
         this.containerId = containerId;
         this.tooltipId = tooltipId;
-        this.margin = { top: 20, right: 30, bottom: 45, left: 45 };
+        this.margin = { top: 20, right: 30, bottom: 55, left: 45 };
         this.colors = {
             "Distance Sniper": "#ff2a5f",
             "Wrestling Controller": "#00f5ff",

@@ -191,12 +191,21 @@ function setupControls() {
             btn.classed("btn-danger", false).classed("btn-warning", true);
 
             let currentYear = parseInt(d3.select("#year-slider").property("value"));
-            if (currentYear >= 2026) currentYear = 1994; // Reset loop if at the end
+            if (currentYear >= 2026) {
+                currentYear = 1994; // Reset to start if currently at the very end
+                d3.select("#year-slider").property("value", currentYear);
+                updateTimelineYear(currentYear);
+            }
 
             window.state.playInterval = setInterval(() => {
                 currentYear++;
                 if (currentYear > 2026) {
-                    currentYear = 1994; // loop wrap
+                    // Reached the end: Stop playing automatically
+                    clearInterval(window.state.playInterval);
+                    window.state.isPlaying = false;
+                    btn.html('<i class="fa-solid fa-play"></i> <span class="ms-1 d-none d-sm-inline">Play</span>');
+                    btn.classed("btn-danger", true).classed("btn-warning", false);
+                    return;
                 }
                 d3.select("#year-slider").property("value", currentYear);
                 updateTimelineYear(currentYear);

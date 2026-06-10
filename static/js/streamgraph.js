@@ -4,7 +4,7 @@ class StreamgraphChart {
     constructor(containerId, tooltipId) {
         this.containerId = containerId;
         this.tooltipId = tooltipId;
-        this.margin = { top: 20, right: 30, bottom: 40, left: 30 };
+        this.margin = { top: 20, right: 30, bottom: 85, left: 30 };
         this.colors = {
             "Distance Sniper": "#ff2a5f",            // Neon Pink
             "Wrestling Controller": "#00f5ff",        // Cyan
@@ -200,14 +200,28 @@ class StreamgraphChart {
 
     renderLegend() {
         this.svg.selectAll(".legend-group").remove();
-        const archetypes = Object.keys(this.colors);
+        
+        // Filter archetypes to only those currently active (honoring showLegacy status)
+        const archetypes = Object.keys(this.colors).filter(k => {
+            if (!this.showLegacy && k === "Legacy / Historical (Limited Stats)") return false;
+            return true;
+        });
+
+        // Translate the legend group to be horizontally placed below the X-axis numbers (which are at this.height)
         const legend = this.svg.append("g")
             .attr("class", "legend-group")
-            .attr("transform", `translate(${this.width - 155}, 10)`);
+            .attr("transform", `translate(0, ${this.height + 42})`);
+
+        // Compute 3 columns evenly distributed across this.width
+        const numCols = 3;
+        const colWidth = this.width / numCols;
 
         archetypes.forEach((arch, i) => {
+            const col = i % numCols;
+            const row = Math.floor(i / numCols);
+
             const g = legend.append("g")
-                .attr("transform", `translate(0, ${i * 18})`)
+                .attr("transform", `translate(${col * colWidth}, ${row * 18})`)
                 .style("cursor", "pointer")
                 .on("click", () => {
                     const customEvent = new CustomEvent("archetypeSelected", { detail: { archetype: arch } });
@@ -215,15 +229,15 @@ class StreamgraphChart {
                 });
 
             g.append("rect")
-                .attr("width", 12)
-                .attr("height", 12)
+                .attr("width", 10)
+                .attr("height", 10)
                 .attr("fill", this.colors[arch])
                 .attr("rx", 2);
 
             g.append("text")
-                .attr("x", 18)
-                .attr("y", 10)
-                .attr("fill", "#8c8c8c")
+                .attr("x", 16)
+                .attr("y", 9)
+                .attr("fill", "#f5f5f7")
                 .style("font-family", "Roboto Mono, monospace")
                 .style("font-size", "0.62rem")
                 .text(arch);

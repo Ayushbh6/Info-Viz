@@ -56,7 +56,7 @@ class RadarChart {
             this.svg.append("text")
                 .attr("x", 4)
                 .attr("y", -r + 10)
-                .attr("fill", "rgba(255,255,255,0.2)")
+                .attr("fill", "rgba(255,255,255,0.55)")
                 .style("font-family", "Roboto Mono, monospace")
                 .style("font-size", "0.62rem")
                 .text(`${(i / levels) * 100}%`);
@@ -95,7 +95,7 @@ class RadarChart {
                 .attr("y", ly)
                 .attr("text-anchor", "middle")
                 .attr("alignment-baseline", "middle")
-                .attr("fill", "#8c8c8c")
+                .attr("fill", "#f5f5f7")
                 .style("font-family", "Rajdhani, sans-serif")
                 .style("font-size", "0.78rem")
                 .style("font-weight", "bold")
